@@ -392,9 +392,7 @@ identificando perfil e porta, e a resposta de `/work` de cada perfil.*
 
 ### 3.1 Cenários de configuração de recursos
 
-Quatro cenários, cada um alterando **um único recurso** em relação ao anterior,
-de modo que o efeito de cada variável seja isolável. O enunciado pede ao menos
-quatro; o template menciona dois.
+Foram definidos quatro cenários a partir da combinação de dois níveis de CPU (1 e 2 vCPUs) e dois níveis de memória (1024 MB e 2048 MB). Essa configuração permite analisar separadamente os efeitos do provisionamento de CPU e memória, comparando cenários que diferem em apenas um recurso.
 
 | Cenário | vCPUs | Memória | O que isola | Medido em A | Medido em B |
 | --- | --- | --- | --- | --- | --- |
@@ -580,13 +578,9 @@ do achado principal.*
 
 #### 3.3.4 A assinatura de saturação
 
-Em C1, a vazão sobe de 3,72 (nível 1) para 3,59 (nível 2) e **cai** para 1,98 no
-nível 4, enquanto o p95 salta de 293 ms para 5128 ms — um fator de 17. Vazão que
-para de crescer e depois regride, com a latência crescendo linearmente, é a
-assinatura clássica de um recurso saturado (Figuras 8 e 9): os clientes
-adicionais não produzem trabalho útil novo, apenas entram na fila. A Lei de
-Little descreve exatamente isso — com vazão constante, o número de requisições em
-voo cresce na proporção direta da latência.
+No cenário C1, a vazão permaneceu relativamente estável entre os níveis 1 e 2, passando de 3,72 para 3,59 requisições por segundo, e caiu para 1,98 requisições por segundo no nível 4. Ao mesmo tempo, o percentil 95 do tempo de resposta aumentou de 293 ms para 5128 ms, aproximadamente 17,5 vezes.
+
+Esse comportamento é compatível com uma situação de saturação: o aumento da concorrência deixa de proporcionar ganhos de vazão e passa a provocar elevação acentuada da latência. Dessa forma, o aumento da demanda não se traduz necessariamente em maior capacidade de processamento, podendo resultar em maiores tempos de espera.
 
 #### 3.3.5 O provisionamento de memória é o fator decisivo
 
@@ -807,12 +801,9 @@ diferentes e medidos em sessões diferentes, é evidência forte de que o fenôm
 real e não um artefato da instrumentação ou daquela VM específica. Compare as
 Figuras 13 e 20: as duas curvas de swap têm a mesma forma.
 
-**A anomalia do conjunto A não se repete.** Na §3.3.9 registramos que C3 no nível
-2 do conjunto A saiu anomalamente baixo (2,12 rps, p95 de 2171 ms) — pior que C1
-no mesmo nível, apesar de ter o dobro de memória, sem mecanismo que explicasse
-isso. No conjunto B, C3 no nível 2 dá 3,63 rps com p95 de 681 ms, o melhor valor
-daquela coluna e coerente com a série. Isso confirma que a anomalia de A era
-**ruído do hospedeiro**, como suspeitávamos, e não um comportamento do sistema.
+**A anomalia do conjunto A não se repetiu.** No conjunto A, o cenário C3 apresentou vazão de 2,12 requisições por segundo e p95 de 2171 ms no nível 2, valores inferiores aos observados em C1 no mesmo nível de demanda. No conjunto B, C3 apresentou vazão de 3,63 requisições por segundo e p95 de 681 ms, mostrando um comportamento diferente daquele observado anteriormente.
+
+Essa diferença pode estar associada à contenção de recursos no hospedeiro e à variabilidade das medições. Entretanto, como cada configuração foi medida apenas uma vez por ambiente, não é possível determinar com precisão a causa da diferença observada.
 
 **O conjunto B é internamente mais coerente.** Em A, a vazão de C3 cai de 3,44
 para 2,05 rps entre os níveis 1 e 4. Em B, ela *sobe* de 3,65 para 3,79. A série
@@ -832,8 +823,7 @@ essa é a principal lacuna que uma replicação futura deveria fechar.
 
 ### 3.5 Os dois conjuntos lado a lado
 
-Comparação ponto a ponto, nos quatro pontos que os dois conjuntos têm em comum.
-Latência em ms, vazão em req/s.
+Comparação ponto a ponto dos seis resultados em comum entre os conjuntos A e B, correspondentes aos cenários C1 e C3, cada um avaliado com 1, 2 e 4 clientes concorrentes. A latência é apresentada em milissegundos e a vazão em requisições por segundo.
 
 | Ponto | Vazão A | Vazão B | p95 A | p95 B | Swap A | Swap B | CPU A | CPU B |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
